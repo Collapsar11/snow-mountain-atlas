@@ -1,0 +1,57 @@
+name: Build atlas and publish Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: snow-atlas-pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check data and build
+        run: |
+          npm test
+          npm run build
+      - name: Publish only compiled files to gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          publication_dir="${RUNNER_TEMP}/snow-atlas-publication"
+          mkdir -p "$publication_dir"
+          cp -R dist/. "$publication_dir/"
+          cd "$publication_dir"
+          git init -b gh-pages
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git fetch --depth=1 origin gh-pages; then
+            git reset --soft FETCH_HEAD
+          fi
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish atlas from ${GITHUB_SHA}"
+            git push origin HEAD:gh-pages
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the compiled gh-pages content
+        id: deployment
+        uses: actions/deploy-pages@v4

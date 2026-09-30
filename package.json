@@ -1,0 +1,14 @@
+{
+  "name": "snow-mountain-atlas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "雪山图志：中国雪山、人文与徒步路线档案",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/data.test.mjs",
+    "preview": "node scripts/serve.mjs",
+    "check:browser": "node tests/browser.mjs"
+  },
+  "devDependencies": {"playwright": "1.58.2"}
+}
