@@ -31,3 +31,18 @@ test('Updated mountain elevations and scope are preserved',()=>{
  assert.equal(data.mountains.length,20);assert.equal(data.routes.length,19);
  assert.equal(get('k2').category,'landscape');assert(get('everest').access.includes('尼泊尔'));
 });
+test('Reading sections preserve references and match every itinerary node',()=>{
+  function checkStory(story,id){
+    assert(story.title,`${id} story title`);
+    assert(story.paragraphs.length>=2,`${id} story paragraphs`);
+    assert(story.sources.length>0,`${id} story citations`);
+    for(const ref of story.sources)assert(data.sources[ref],`${id}: missing ${ref}`);
+  }
+  for(const m of data.mountains){assert(m.stories.length>=2,m.id);for(const story of m.stories){checkStory(story,m.id);assert(story.kind)}}
+  for(const r of data.routes){
+    checkStory(r.trailStory,r.id);
+    assert.equal(r.stageNotes.length,r.stops.length,r.id);
+    assert(r.stageNotes.every(note=>note.length>15),`${r.id} stage notes`);
+    assert(r.planning.title&&r.planning.paragraphs.length>=2,`${r.id} planning`);
+  }
+});

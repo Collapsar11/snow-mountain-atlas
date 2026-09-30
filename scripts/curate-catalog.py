@@ -95,5 +95,18 @@ route('tianchi','博格达 · 天池开放游步道','bogda','commercial','tianc
 route('gangshika-base','岗什卡 · 七彩瀑布至大本营','gangshika','commercial','gangshika','岗什卡雪峰实景；路线现场照片见两步路官方原文','3.8 km 单程','1 天','以当日终点为准','高强度','依景区天气与开放','采用 2026 年两步路与文旅活动共创的七彩瀑布至大本营线路尺度，只到允许的徒步终点。',['七彩瀑布（连心湖）','指定徒步线','大本营','原路返回'],['gangshika-route','gangshika-gov'],'确认当日开放终点及向导要求；本页不延伸到冰川和技术攀登路段。','西宁至门源后接驳景区；公路改善不等于所有车辆可直接进入步行区域。',['单程 3.8 km 若原路返回，基础距离约 7.6 km。','全程高海拔，出发前留适应时间。','带防风保暖层、路餐和备用电源。'],gear='high',metrics='2026-07-15 平台官方文章公布 3.8 km 单程；未从海拔不明资料推算累计爬升。')
 route('xuebaoding-camp','雪宝顶 · 营地接近记录','xuebaoding','private','xuebaoding','雪宝顶实景；营地接近段照片见原作者游记','原文未给本段里程','原记录 1 个行走日','营地约 4260 m','高强度','仅作行走档案','摘录 2023 年阿尼玛东长线中的营地接近段：从约 4080 米营地到雪宝顶大本营。原文后续攀雪坡活动不列入本页路线。',['原记录 4080 米营地','雪宝顶营地接近段','4260 米大本营'],['xuebaoding-journal'],'起点需依托完整长线接近；没有独立公开入口、里程和准入证据，不可直接照此出行。',gear='expedition',metrics='位置与海拔均为作者记录，未提供自制 GPX 或假设路线。',record='2023-05-16')
 route('amne-kora','阿尼玛卿 · 传统转山记录','amne','private','amne','阿尼玛卿实景；沿途实拍与轨迹见原文','记录约 150 km','约 7–9 天规划','多段 4000 m 以上','高强度','原记录 2026 年 6 月','2026 年个人游记按七段整理完整转山，保留长距离、高海拔与季节性补给的真实门槛。',['察那卡多','达乔垭口','头格营地','觉姆央拉','马鞭山','哈龙沟','白塔村','察那卡多'],['amne-journal'],'原文称当年景区解封，但本页未独立取得官方开放公告；需再次核实准入与补给。',gear='expedition',metrics='七段里程为作者记录 26、18、26、24、18、20、18 km，总约 150 km；非独立测绘。',record='2026-06')
-(ROOT/'src/data/catalog.json').write_text(json.dumps(dict(version='2026.10',checked='2026-10-01',mountains=M,routes=R,sources=S),ensure_ascii=False,indent=2))
+reading=json.loads((ROOT/'src/data/mountain-stories.json').read_text())
+for key,entry in reading['sources'].items():
+    source(key,entry['title'],entry['url'],entry['kind'])
+route_notes=json.loads((ROOT/'src/data/route-notes.json').read_text())
+assert set(reading['mountains']) == {m['id'] for m in M}
+assert set(route_notes) == {r['id'] for r in R}
+for m in M:
+    m.update(reading['mountains'][m['id']])
+    m['sources']=list(dict.fromkeys(m['sources']+[s for story in m['stories'] for s in story['sources']]))
+for r in R:
+    r.update(route_notes[r['id']])
+    assert len(r['stageNotes']) == len(r['stops']), r['id']
+    r['sources']=list(dict.fromkeys(r['sources']+r['trailStory']['sources']))
+(ROOT/'src/data/catalog.json').write_text(json.dumps(dict(version='2026.10.1',checked='2026-10-01',mountains=M,routes=R,sources=S),ensure_ascii=False,indent=2))
 print(f'{len(M)} mountains; {len(R)} routes; {len(S)} sources')
