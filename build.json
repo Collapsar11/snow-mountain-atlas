@@ -1,6 +1,7 @@
 {
-  "version": "2026.10.1",
-  "mountains": 20,
+  "version": "2026.10.2",
+  "mountains": 36,
+  "lakes": 20,
   "routes": 19,
-  "photos": 30
+  "photos": 65
 }
