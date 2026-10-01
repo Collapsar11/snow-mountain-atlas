@@ -108,5 +108,7 @@ for r in R:
     r.update(route_notes[r['id']])
     assert len(r['stageNotes']) == len(r['stops']), r['id']
     r['sources']=list(dict.fromkeys(r['sources']+r['trailStory']['sources']))
-(ROOT/'src/data/catalog.json').write_text(json.dumps(dict(version='2026.10.1',checked='2026-10-01',mountains=M,routes=R,sources=S),ensure_ascii=False,indent=2))
-print(f'{len(M)} mountains; {len(R)} routes; {len(S)} sources')
+from landscapes import extend_catalog
+L=extend_catalog(S,M)
+(ROOT/'src/data/catalog.json').write_text(json.dumps(dict(version='2026.10.2',checked='2026-10-01',mountains=M,lakes=L,routes=R,sources=S),ensure_ascii=False,indent=2))
+print(f'{len(M)} mountains; {len(L)} lakes; {len(R)} routes; {len(S)} sources')

@@ -12,5 +12,5 @@ const catalog = JSON.parse(await readFile(path.join(root, 'src/data/catalog.json
 const photos = JSON.parse(await readFile(path.join(root, 'src/data/photos.json'), 'utf8'));
 await writeFile(path.join(out, 'data.js'), `export const catalog=${JSON.stringify(catalog)};\nexport const photos=${JSON.stringify(photos)};\n`);
 await writeFile(path.join(out, '.nojekyll'), '');
-await writeFile(path.join(out, 'build.json'), JSON.stringify({ version: catalog.version, mountains: catalog.mountains.length, routes: catalog.routes.length, photos: Object.keys(photos).length }, null, 2));
-console.log(`Built ${catalog.mountains.length} mountain collections, ${catalog.routes.length} routes into dist/`);
+await writeFile(path.join(out, 'build.json'), JSON.stringify({ version: catalog.version, mountains: catalog.mountains.length, lakes: catalog.lakes.length, routes: catalog.routes.length, photos: Object.keys(photos).length }, null, 2));
+console.log(`Built ${catalog.mountains.length} mountain collections, ${catalog.lakes.length} lakes, ${catalog.routes.length} routes into dist/`);

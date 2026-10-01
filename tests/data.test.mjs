@@ -6,7 +6,7 @@ const root=path.resolve(import.meta.dirname,'..');
 const data=JSON.parse(await readFile(path.join(root,'src/data/catalog.json')));
 const photos=JSON.parse(await readFile(path.join(root,'src/data/photos.json')));
 test('All mountain and route records have unique ids, verified photo assets and traceable sources',async()=>{
-  for(const group of [data.mountains,data.routes]){
+  for(const group of [data.mountains,data.lakes,data.routes]){
     assert.equal(new Set(group.map(x=>x.id)).size,group.length);
     for(const x of group){
       assert(x.name);assert(x.checked);assert(photos[x.photo],`${x.id} photo`);
@@ -28,7 +28,7 @@ test('Every photo keeps its actual author, license and original source',()=>{
 test('Updated mountain elevations and scope are preserved',()=>{
  const get=id=>data.mountains.find(m=>m.id===id);
  assert.equal(get('gongga').height,7508.9);assert.equal(get('siguniang').height,6247.8);assert.equal(get('everest').height,8848.86);
- assert.equal(data.mountains.length,20);assert.equal(data.routes.length,19);
+ assert.equal(data.mountains.length,36);assert.equal(data.lakes.length,20);assert.equal(data.routes.length,19);
  assert.equal(get('k2').category,'landscape');assert(get('everest').access.includes('尼泊尔'));
 });
 test('Reading sections preserve references and match every itinerary node',()=>{
@@ -38,11 +38,25 @@ test('Reading sections preserve references and match every itinerary node',()=>{
     assert(story.sources.length>0,`${id} story citations`);
     for(const ref of story.sources)assert(data.sources[ref],`${id}: missing ${ref}`);
   }
-  for(const m of data.mountains){assert(m.stories.length>=2,m.id);for(const story of m.stories){checkStory(story,m.id);assert(story.kind)}}
+  for(const m of [...data.mountains,...data.lakes]){assert(m.stories.length>=2,m.id);for(const story of m.stories){checkStory(story,m.id);assert(story.kind)}}
   for(const r of data.routes){
     checkStory(r.trailStory,r.id);
     assert.equal(r.stageNotes.length,r.stops.length,r.id);
     assert(r.stageNotes.every(note=>note.length>15),`${r.id} stage notes`);
     assert(r.planning.title&&r.planning.paragraphs.length>=2,`${r.id} planning`);
   }
+});
+
+test('Lake records keep water geography and appreciation scope separate from mountain height',()=>{
+ for(const l of data.lakes){
+  for(const k of ['geography','ecology','culture','viewing'])assert(l[k]?.length>25,`${l.id}: ${k}`);
+  assert(l.regions.length>0);assert(l.water&&l.elevation&&l.photoCaption);assert(!('height' in l));
+  assert(['scenic','archive'].includes(l.mode));assert.equal(l.coordinates.length,2);
+  for(const id of l.relatedMountains)assert(data.mountains.some(m=>m.id===id),`${l.id} mountain ${id}`);
+  for(const id of l.relatedLakes)assert(data.lakes.some(x=>x.id===id),`${l.id} lake ${id}`);
+ }
+ assert.deepEqual(data.lakes.find(l=>l.id==='lugu').regions,['云南','四川']);
+ for(const id of ['zhaling','eling'])assert.equal(data.lakes.find(l=>l.id===id).mode,'archive');
+ for(const id of ['zhaling','eling','tangra','pumoyumco'])assert.match(data.lakes.find(l=>l.id===id).photoCaption,/空间站/);
+ assert.equal(data.mountains.find(m=>m.id==='genyen').height,6174.5);
 });
